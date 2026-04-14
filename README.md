@@ -4,7 +4,7 @@ A Flutter application made for the convenience of students at epvalongo.
 
 ## Overview
 
-This project is a fast and modern alternative to the [epvalongo website](https://inovar.epvalongo.com/inovarconsulta/app/).
+This project is a fast and modern alternative to inovar.
 Its primary goal is to provide students with a seamless experience and the option to access their data even while **offline**.
 
 ## Main features:
