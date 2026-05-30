@@ -4,8 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'db_functions.dart' as db;
 
-class Grades{
-
+class Grades {
   String? token;
   int? resistrationId;
   int? teachingType;
@@ -16,54 +15,54 @@ class Grades{
   bool isLoading = false;
   bool fromEPV = false;
   List<GradesClass> classes = [];
-  
-  Future<void> update({bool force = false}) async{
-    if (token == null || resistrationId == null || teachingType == null){
+
+  Future<void> update({bool force = false}) async {
+    if (token == null || resistrationId == null || teachingType == null) {
       return;
     }
-    if (!force && !shouldUpdate()){
+    if (!force && !shouldUpdate()) {
       return;
     }
     print("Loading user grades");
-    
+
     isLoading = true;
 
     dynamic data = await tryLoadData();
 
-    if (data != null){
+    if (data != null) {
       handleData(data);
       loaded = true;
       fromEPV = false;
     }
-    
+
     data = await db.getUserGrades(token, resistrationId, teachingType);
-    
-    if (data == null){
+
+    if (data == null) {
       isLoading = false;
       return;
     }
-    
+
     handleData(data);
-    
+
     lastTimeUpdated = DateTime.now();
     isLoading = false;
     fromEPV = true;
-    
+
     print("User grades loaded");
     saveData(data);
   }
 
-  void handleData(dynamic data){
+  void handleData(dynamic data) {
     classes.clear();
-    for (dynamic classData in data){
+    for (dynamic classData in data) {
       GradesClass classe = GradesClass();
       classe.name = classData['name'];
 
-      for (dynamic moduleData in classData['modules']){
+      for (dynamic moduleData in classData['modules']) {
         classe.modules.add(
           GradesModule(
-            name: moduleData['name'], 
-            grade: int.tryParse(moduleData['grade']) ?? -1, 
+            name: moduleData['name'],
+            grade: int.tryParse(moduleData['grade']) ?? -1,
             year: int.tryParse(moduleData['year']) ?? -1,
             date: DateTime.parse(moduleData['date']),
           ),
@@ -88,7 +87,7 @@ class Grades{
     return jsonDecode(data);
   }
 
-  bool shouldUpdate(){
+  bool shouldUpdate() {
     if (isLoading) return false;
     if (!fromEPV) return true;
     if (!loaded) return true;
@@ -96,47 +95,57 @@ class Grades{
     return false;
   }
 
-  double getAverage(){
+  double getAverage({int? yearSelected}) {
     int possiblePoints = 0;
     int points = 0;
 
-    for (GradesClass classe in classes){
+    for (GradesClass classe in classes) {
       if (classe.modulesCompleted == 0) continue;
 
       possiblePoints += 20 * classe.modulesCompleted;
 
-      points += (classe.average * classe.modulesCompleted).round();
+      points +=
+          (classe.getAverage(yearSelected: yearSelected) *
+                  classe.modulesCompleted)
+              .round();
     }
-    double res = (possiblePoints > 0) 
-      ? (points / possiblePoints * 20) 
-      : 0.0;
+    double res = (possiblePoints > 0) ? (points / possiblePoints * 20) : 0.0;
 
     return res;
   }
-
 }
 
 class GradesClass {
   String name = "";
-  double average = 0.0;
   int modulesCompleted = 0;
   List<GradesModule> modules = [];
 
   void calculateVars() {
     modulesCompleted = 0;
-    average = 0.0;
 
-    for (GradesModule module in modules){
+    for (GradesModule module in modules) {
       if (module.grade == -1) continue;
-      
+
       modulesCompleted++;
-      average += module.grade;
-    }
-    if (average > 0){
-      average /= modulesCompleted;
     }
   }
 
+  double getAverage({int? yearSelected}) {
+    double average = 0.0;
+    int tmpmodules = 0;
+    for (GradesModule module in modules) {
+      if (yearSelected != null && module.year != yearSelected) continue;
+      if (module.grade == -1) continue;
+
+      tmpmodules++;
+      average += module.grade;
+    }
+
+    if (average > 0) {
+      average /= tmpmodules;
+    }
+    return average;
+  }
 }
 
 class GradesModule {

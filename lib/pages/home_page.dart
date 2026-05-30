@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void startUiTimer() async {
-    timer = Timer.periodic(Duration(seconds: 3), (timer) async {
+    timer = Timer.periodic(Duration(seconds: 1), (timer) async {
       if (!mounted) return;
 
       await user!.updateUserData();
@@ -158,9 +158,7 @@ class _HomePageState extends State<HomePage> {
       futureEvents.sort((a, b) => a.startTime.compareTo(b.startTime));
     }
 
-    return SizedBox(
-      width: double.infinity,
-      height: 300,
+    return Flexible(
       child: Stack(
         children: [
           ColumnContainerWidget(

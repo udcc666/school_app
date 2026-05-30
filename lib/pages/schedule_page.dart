@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:school_app/themes/app/app_theme.dart';
@@ -37,10 +38,19 @@ class _SchedulePageState extends State<SchedulePage> {
     }
 
     _calendarController.displayDate = getCurrentWeek();
-    
+
+    startUiTimer();
   }
 
-  DateTime getCurrentDay({bool addDays = true}){
+  void startUiTimer() async {
+    Timer.periodic(Duration(seconds: 1), (timer) async {
+      if (!mounted) return;
+
+      setState(() {});
+    });
+  }
+
+  DateTime getCurrentDay({bool addDays = true}) {
     final now = DateTime(
       DateTime.now().year,
       DateTime.now().month,
@@ -49,16 +59,12 @@ class _SchedulePageState extends State<SchedulePage> {
       0,
       0,
     );
-    return now.add(Duration(
-      days: (addDays ? 2 : 0)
-    ));
+    return now.add(Duration(days: (addDays ? 2 : 0)));
   }
 
   DateTime getCurrentWeek({bool addDays = true}) {
     final now = getCurrentDay();
-    return now.subtract(Duration(
-      days: now.weekday - (addDays ? 2 : 1)
-    ));
+    return now.subtract(Duration(days: now.weekday - (addDays ? 2 : 1)));
   }
 
   void gotoThisWeek() {
@@ -70,10 +76,7 @@ class _SchedulePageState extends State<SchedulePage> {
 
   void gotoNextWeek() {
     final DateTime now = _calendarController.displayDate!;
-    final DateTime nextWeek = now.add(
-      Duration(
-        days: 7,
-    ));
+    final DateTime nextWeek = now.add(Duration(days: 7));
     setState(() {
       _calendarController.displayDate = nextWeek;
     });
@@ -81,10 +84,7 @@ class _SchedulePageState extends State<SchedulePage> {
 
   void gotoPreviousWeek() {
     final DateTime now = _calendarController.displayDate!;
-    final DateTime nextWeek = now.subtract(
-      Duration(
-        days: 7,
-    ));
+    final DateTime nextWeek = now.subtract(Duration(days: 7));
     setState(() {
       _calendarController.displayDate = nextWeek;
     });
@@ -102,25 +102,22 @@ class _SchedulePageState extends State<SchedulePage> {
     final activities = global.user!.schedule.schedule.activities;
 
     for (var item in classes) {
-
       final test = tests.cast<dynamic>().firstWhere(
         (test) => test.startTime.isAtSameMomentAs(item.startTime),
         orElse: () => null,
       );
 
-      Color color = test == null 
-        ? Colors.blue 
-        : Colors.red;
-      
+      Color color = test == null ? Colors.blue : Colors.red;
+
       String timeString = item.startTime.toString().substring(11, 16);
       timeString += " - ${item.endTime.toString().substring(11, 16)}";
 
-      String notes = 
-        "${item.subject}\n"
-        "Professor: ${item.teacher}\n"
-        "Sala ${item.room}\n"
-        "$timeString\n";
-      
+      String notes =
+          "${item.subject}\n"
+          "Professor: ${item.teacher}\n"
+          "Sala ${item.room}\n"
+          "$timeString\n";
+
       if (test != null) {
         notes += "${test.title}\n";
       }
@@ -163,14 +160,16 @@ class _SchedulePageState extends State<SchedulePage> {
     return Scaffold(
       body: Stack(
         children: [
-          Positioned( // Schedule
+          Positioned(
+            // Schedule
             top: headerHeight,
             left: 0,
             right: 0,
             bottom: 0,
-            child: buildSchedule()
-          ), 
-          Positioned( // Header
+            child: buildSchedule(),
+          ),
+          Positioned(
+            // Header
             top: 0,
             left: 0,
             right: 0,
@@ -181,35 +180,34 @@ class _SchedulePageState extends State<SchedulePage> {
       ),
     );
   }
-  
+
   Widget buildSchedule() {
-    
     return SfCalendar(
       controller: _calendarController,
       view: CalendarView.workWeek,
-    
+
       dataSource: MeetingDataSource(_getDataSource()),
-    
+
       firstDayOfWeek: 1,
-    
+
       headerHeight: 0,
-    
+
       appointmentBuilder: (context, details) {
         final Appointment appointment = details.appointments.first;
         return AppointmentTile(appointment: appointment, details: details);
       },
-    
+
       timeSlotViewSettings: const TimeSlotViewSettings(
         timeInterval: Duration(minutes: 60),
         timeIntervalHeight: 85,
-    
+
         numberOfDaysInView: 5,
-    
+
         nonWorkingDays: <int>[DateTime.saturday, DateTime.sunday],
         startHour: 7,
-        endHour: 23
+        endHour: 23,
       ),
-    
+
       onTap: (CalendarTapDetails details) {
         if (details.appointments != null && details.appointments!.isNotEmpty) {
           setState(() {
@@ -217,11 +215,10 @@ class _SchedulePageState extends State<SchedulePage> {
           });
         }
       },
-      
     );
   }
 
-  Widget buildScheduleDetails(BuildContext context){
+  Widget buildScheduleDetails(BuildContext context) {
     if (selectedAppointment == null) {
       return Container();
     }
@@ -247,7 +244,7 @@ class _SchedulePageState extends State<SchedulePage> {
                 color: colors.surface,
               ),
               constraints: BoxConstraints(
-                minWidth: min(350, MediaQuery.of(context).size.width * 0.9), 
+                minWidth: min(350, MediaQuery.of(context).size.width * 0.9),
                 maxWidth: MediaQuery.of(context).size.width * 0.9,
               ),
               child: Padding(
@@ -266,10 +263,7 @@ class _SchedulePageState extends State<SchedulePage> {
                         ),
                       ),
                     ),
-                    Divider(
-                      indent: 20,
-                      endIndent: 20,
-                    ),
+                    Divider(indent: 20, endIndent: 20),
                     const SizedBox(height: 10),
                     Text(
                       selectedAppointment!.notes ?? "",
@@ -283,7 +277,6 @@ class _SchedulePageState extends State<SchedulePage> {
                   ],
                 ),
               ),
-              
             ),
           ),
         ),
@@ -306,38 +299,34 @@ class _SchedulePageState extends State<SchedulePage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             spacing: 5,
             children: [
+              _buildHeaderButton(context, Icons.chevron_left, gotoPreviousWeek),
               _buildHeaderButton(
-                context, 
-                Icons.chevron_left, 
-                gotoPreviousWeek
+                context,
+                Icons.today,
+                gotoThisWeek,
+                width: 100,
               ),
-              _buildHeaderButton(
-                context, 
-                Icons.today, 
-                gotoThisWeek, 
-                width: 100
-              ),
-              _buildHeaderButton(
-                context, 
-                Icons.chevron_right, 
-                gotoNextWeek
-              ),
+              _buildHeaderButton(context, Icons.chevron_right, gotoNextWeek),
             ],
           ),
         ),
         LoadIndicatorWidget(
-          colorId: global.user!.schedule.loadingFromEPV ? 1
-            : global.user!.schedule.fromEPV ? 2
-            : 0
+          colorId: global.user!.schedule.loadingFromEPV
+              ? 1
+              : global.user!.schedule.fromEPV
+              ? 2
+              : 0,
         ),
       ],
     );
   }
 
-  Widget _buildHeaderButton(BuildContext context, 
-    IconData icon, VoidCallback onPressed,
-    { double width = 60 }
-  ) {
+  Widget _buildHeaderButton(
+    BuildContext context,
+    IconData icon,
+    VoidCallback onPressed, {
+    double width = 60,
+  }) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     return SizedBox(
@@ -348,9 +337,7 @@ class _SchedulePageState extends State<SchedulePage> {
           backgroundColor: colors.primary,
           foregroundColor: colors.onPrimary,
           padding: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: AppTheme.buttonRadius,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: AppTheme.buttonRadius),
         ),
         child: Icon(icon, color: colors.onPrimary),
       ),
@@ -379,17 +366,14 @@ class AppointmentTile extends StatelessWidget {
       "activity": [Colors.green, Colors.white],
     };
 
-    final String type = [
-      "class",
-      "test",
-      "activity",
-    ][([Colors.blue, Colors.red, Colors.green] as List<Color>).indexOf(appointment.color)];
+    final String type =
+        ["class", "test", "activity"][([Colors.blue, Colors.red, Colors.green]
+                as List<Color>)
+            .indexOf(appointment.color)];
 
     if (appointment.isAllDay) {
       return Container(
-        constraints: BoxConstraints(
-          minHeight: 200,
-        ),
+        constraints: BoxConstraints(minHeight: 200),
         decoration: BoxDecoration(
           color: eventColors[type]!.first,
           borderRadius: AppTheme.buttonRadius,
