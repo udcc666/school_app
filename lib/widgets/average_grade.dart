@@ -19,11 +19,20 @@ class _AverageGradeWidgetState extends State<AverageGradeWidget> {
   Grades get grades => global.user!.grades;
 
   bool get showGlobal => widget.classID == -1;
-  int? globalYearSelected = global.yearSelected;
+  int? globalYearSelected;
 
   @override
   void initState() {
     super.initState();
+    globalYearSelected = global.yearSelected;
+  }
+
+  @override
+  void didUpdateWidget(covariant AverageGradeWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+    globalYearSelected = global.yearSelected;
+    });
   }
 
   @override
