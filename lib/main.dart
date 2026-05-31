@@ -3,7 +3,6 @@ import 'package:school_app/pages/first_time.dart';
 import 'package:timezone/data/latest.dart' as tz;
 //import 'package:shared_preferences/shared_preferences.dart';
 
-
 import 'package:school_app/themes/app/app_theme.dart';
 
 import 'package:school_app/Global.dart' as global;
@@ -12,6 +11,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   tz.initializeTimeZones();
   await global.initTheme();
+  await global.getYearSelected();
   runApp(const MyApp());
 }
 

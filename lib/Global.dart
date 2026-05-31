@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'functions/student_class.dart';
 
-
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.dark);
 
 Future<void> initTheme() async {
@@ -16,13 +15,36 @@ Future<void> initTheme() async {
 }
 
 void setThemeMode(ThemeMode? mode) async {
-  mode ??= themeNotifier.value == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+  mode ??= themeNotifier.value == ThemeMode.dark
+      ? ThemeMode.light
+      : ThemeMode.dark;
   themeNotifier.value = mode;
-  
+
   final prefs = await SharedPreferences.getInstance();
   prefs.setString("theme", (mode == ThemeMode.dark ? "dark" : "light"));
 }
 
+// Grades
+int? yearSelected;
+
+Future<void> setYearSelected(int? val) async {
+  yearSelected = val;
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString('year_selected', (yearSelected ?? 0).toString());
+}
+
+Future<int?> getYearSelected() async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  final valS = prefs.getString('year_selected') ?? '0';
+
+  yearSelected = int.tryParse(valS);
+  if (yearSelected != null && yearSelected == 0) {
+    yearSelected = null;
+  }
+  return yearSelected;
+}
+
+// Account
 Student? user;
 
 Future<void> saveAccounts(List<dynamic> accounts) async {
@@ -34,12 +56,7 @@ Future<void> saveAccounts(List<dynamic> accounts) async {
       imageBase64 = base64Encode(item[3]);
     }
 
-    toSave.add([
-      item[0],
-      item[1],
-      item[2],
-      imageBase64,
-    ]);
+    toSave.add([item[0], item[1], item[2], imageBase64]);
   }
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setString("accounts", jsonEncode(toSave));
@@ -55,32 +72,35 @@ Future<List<dynamic>> getSavedAccounts() async {
   dynamic accounts = jsonDecode(accountsJson);
   for (var item in accounts) {
     if (item is! List) continue;
-    if (item.length == 4){
+    if (item.length == 4) {
       try {
         item[3] = base64Decode(item[3]);
       } catch (e) {
         item[3] = null;
         print("Error decoding account image: $e");
       }
-    }else {
+    } else {
       item.add(null);
     }
   }
   return accounts;
 }
 
-Future<void> logout() async{
+Future<void> logout() async {
   final prefs = await SharedPreferences.getInstance();
   List<dynamic> _accouts = await getSavedAccounts();
   prefs.clear();
   prefs.setBool('seen', true);
-  prefs.setString("theme", (themeNotifier.value == ThemeMode.dark ? "dark" : "light"));
+  prefs.setString(
+    "theme",
+    (themeNotifier.value == ThemeMode.dark ? "dark" : "light"),
+  );
   saveAccounts(_accouts);
   // prefs.setInt("lastLoginId", -1);
   user = null;
 }
 
-Future<bool> isFirstTime() async{
+Future<bool> isFirstTime() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   return !(prefs.getBool('seen') ?? false);
 }

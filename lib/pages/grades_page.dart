@@ -18,7 +18,6 @@ class GradesPage extends StatefulWidget {
 }
 
 class _GradesPageState extends State<GradesPage> {
-
   Timer? _timer;
 
   Grades get grades => global.user!.grades;
@@ -62,13 +61,13 @@ class _GradesPageState extends State<GradesPage> {
     if (!grades.loaded) {
       return Center(child: CircularProgressIndicator());
     }
-    if (selectedClassId != -1){
+    if (selectedClassId != -1) {
       return buildModulesPage();
     }
     return buildMainContainer();
   }
 
-  Widget buildMainContainer(){
+  Widget buildMainContainer() {
     // final theme = Theme.of(context);
     // final colors = theme.colorScheme;
 
@@ -78,15 +77,16 @@ class _GradesPageState extends State<GradesPage> {
       padding: const EdgeInsets.all(20.0),
       child: Column(
         spacing: 10,
-        children: [
-          AverageGradeWidget(),
-          buildClasses(),
-        ]
+        children: [AverageGradeWidget(
+          onYearChanged: () {
+            setState(() {});
+          },
+        ), buildClasses()],
       ),
     );
   }
 
-  Widget buildTopItems(){
+  Widget buildTopItems() {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
@@ -94,7 +94,7 @@ class _GradesPageState extends State<GradesPage> {
       decoration: BoxDecoration(
         color: colors.surfaceContainer,
         borderRadius: AppTheme.containerRadius,
-        boxShadow: AppTheme.defaultShadow
+        boxShadow: AppTheme.defaultShadow,
       ),
       height: 100,
       width: double.infinity,
@@ -105,7 +105,8 @@ class _GradesPageState extends State<GradesPage> {
             child: Row(
               spacing: 15,
               children: [
-                Container( // Icon
+                Container(
+                  // Icon
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(999),
                     color: colors.surfaceContainerHigh,
@@ -116,7 +117,7 @@ class _GradesPageState extends State<GradesPage> {
                     Icons.trending_up,
                     size: 30,
                     color: colors.primary,
-                  )
+                  ),
                 ),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -124,19 +125,16 @@ class _GradesPageState extends State<GradesPage> {
                   children: [
                     Text(
                       'Média Geral',
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: colors.onSurface
-                      ),
+                      style: TextStyle(fontSize: 20, color: colors.onSurface),
                     ),
                     Row(
                       children: [
                         Text(
-                          '${(grades.getAverage()*10).round()/10}',
+                          '${(grades.getAverage() * 10).round() / 10}',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w600,
-                            color: colors.onSurface
+                            color: colors.onSurface,
                           ),
                         ),
                         Text(
@@ -144,7 +142,7 @@ class _GradesPageState extends State<GradesPage> {
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w300,
-                            color: colors.onSurface
+                            color: colors.onSurface,
                           ),
                         ),
                       ],
@@ -156,34 +154,35 @@ class _GradesPageState extends State<GradesPage> {
           ),
           LoadIndicatorWidget(
             top: 5,
-            colorId: grades.isLoading 
-              ? 1 
-              : grades.fromEPV ? 2 : 0,
+            colorId: grades.isLoading
+                ? 1
+                : grades.fromEPV
+                ? 2
+                : 0,
           ),
         ],
       ),
     );
   }
 
-  Widget buildClasses(){
+  Widget buildClasses() {
     // final theme = Theme.of(context);
     // final colors = theme.colorScheme;
-    
+
     return Flexible(
       child: ColumnContainerWidget(
         text: 'Por disciplina',
         children: [
-          for (int i = 0; i < classes.length; i++)...[
+          for (int i = 0; i < classes.length; i++) ...[
             buildClassButton(i),
-            if (i < classes.length-1)
-              Divider(),
-          ]
+            if (i < classes.length - 1) Divider(),
+          ],
         ],
       ),
     );
   }
 
-  Widget buildClassButton(int id){
+  Widget buildClassButton(int id) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
@@ -238,35 +237,26 @@ class _GradesPageState extends State<GradesPage> {
               spacing: 10,
               children: [
                 Text(
-                  '${(grade.average*10).round()/10.0}',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700
-                  ),
+                  '${(grade.getAverage(yearSelected: global.yearSelected) * 10).round() / 10.0}',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 15,
-                ),
+                Icon(Icons.arrow_forward_ios, size: 15),
               ],
             ),
-            
           ],
         ),
       ),
     );
   }
 
-  Widget buildModulesPage(){
+  Widget buildModulesPage() {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
     final classe = classes[selectedClassId];
 
     return Container(
-      constraints: BoxConstraints(
-        maxWidth: 500
-      ),
+      constraints: BoxConstraints(maxWidth: 500),
       padding: EdgeInsets.all(20.0),
       height: double.infinity,
       child: Column(
@@ -280,46 +270,40 @@ class _GradesPageState extends State<GradesPage> {
                   setState(() {
                     selectedClassId = -1;
                   });
-                }, 
-                icon: Icon(
-                  Icons.arrow_back,
-                  color: colors.onSurface,
-                ),
+                },
+                icon: Icon(Icons.arrow_back, color: colors.onSurface),
               ),
               Expanded(
                 child: Text(
-                  '${classe.name}',
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: colors.onSurface,
-                  ),
+                  classe.name,
+                  style: TextStyle(fontSize: 24, color: colors.onSurface),
                   maxLines: 2,
                 ),
-              )
+              ),
             ],
           ),
           AverageGradeWidget(classID: selectedClassId),
           Flexible(
             child: ColumnContainerWidget(
-              text: 'Módulos', 
-              children: classe.modules.isNotEmpty 
-                ?[
-                  for (int i = 0; i < classe.modules.length; i++) ...[
-                    buildModule(selectedClassId, i),
-                    if (i < classe.modules.length-1)
-                      Divider(),
-                  ],
-                ]
-                :[
-                  const SizedBox(height: 20),
-                  Text(
-                    "Nenhum módulo",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: colors.onSurfaceVariant
-                    ),
-                  ),
-                ],
+              text: 'Módulos',
+              children: classe.modules.isNotEmpty
+                  ? [
+                      for (int i = 0; i < classe.modules.length; i++) ...[
+                        buildModule(selectedClassId, i),
+                        if (i < classe.modules.length - 1) Divider(),
+                      ],
+                    ]
+                  : [
+                      const SizedBox(height: 20),
+                      Text(
+                        "Nenhum módulo",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
             ),
           ),
         ],
@@ -327,74 +311,55 @@ class _GradesPageState extends State<GradesPage> {
     );
   }
 
-  Widget buildModule(int classId, int moduleId){
+  Widget buildModule(int classId, int moduleId) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
     final GradesModule module = classes[classId].modules[moduleId];
 
     return Container(
-      constraints: BoxConstraints(
-        minHeight: 75,
-      ),
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+      constraints: BoxConstraints(minHeight: 75),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         spacing: 20,
         children: [
-          Text(
-            '${moduleId+1}',
-            style: TextStyle(
-              fontSize: 16,
-              color: colors.onSurfaceVariant
-            ),
-          ),
-          Expanded(
+          Flexible(
             child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    module.name,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: colors.onSurface,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  module.name,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: colors.onSurface,
+                    fontWeight: FontWeight.w500,
                   ),
-                  Text(
-                    '${module.year}º ano',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: colors.onSurfaceVariant,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  '${module.year}º ano',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: colors.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
           ),
           Row(
             spacing: 10,
             children: [
               Text(
-                '${
-                  module.grade >= 0
-                    ? (module.grade*10).round()/10.0
-                    : 'none'
-                }',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700
-                ),
+                '${module.grade >= 0 ? (module.grade * 10).round() / 10.0 : 'none'}',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
             ],
           ),
-          
         ],
       ),
     );
   }
-
 }
